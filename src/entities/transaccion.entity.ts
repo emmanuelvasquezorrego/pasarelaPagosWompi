@@ -5,7 +5,7 @@ export class Transaccion {
   @PrimaryColumn('uuid')
   id_transaccion: string;
 
-  @Column({ type: 'varchar', length: 100 })
+  @Column({ type: 'varchar', length: 150, nullable: true })
   id_wompi: string;
 
   @Column({ type: 'uuid', nullable: true })
@@ -20,7 +20,7 @@ export class Transaccion {
   @Column({ type: 'uuid' })
   id_cita: string;
 
-  @Column({ type: 'decimal', precision: 12, scale: 2 })
+  @Column({ type: 'decimal', precision: 12, scale: 2, default: 0 })
   monto: number;
 
   @Column({ type: 'varchar', length: 10, default: 'COP' })

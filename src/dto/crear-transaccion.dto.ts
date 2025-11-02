@@ -23,4 +23,12 @@ export class CrearTransaccionDto {
   @IsString()
   @IsOptional()
   prestador_servicio?: string;
+
+  @IsString()
+  @IsOptional()
+  customer_email?: string;
+
+  @IsString()
+  @IsOptional()
+  reference?: string;
 }

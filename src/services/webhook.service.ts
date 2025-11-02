@@ -16,17 +16,17 @@ export class WebhookService {
   ) {}
 
   async manejarWebhook(payload: any, signature: string): Promise<void> {
-    const secret = process.env.WOMPI_PRIVATE_KEY; // Usar la clave secreta
+    const secret = process.env.WOMPI_PRIVATE_KEY;
     const idEvento = uuidv4();
 
-    // Validar firma
     if (!secret) throw new Error('La variable WOMPI_PRIVATE_KEY no está definida');
 
-    const calculatedSignature = crypto.createHmac('sha256', secret)
+    const calculatedSignature = crypto
+      .createHmac('sha256', secret)
       .update(JSON.stringify(payload))
       .digest('hex');
 
-    const firmaValida = true;
+    const firmaValida = calculatedSignature === signature;
 
     const evento = this.webhookRepo.create({
       id_evento: idEvento,
@@ -39,10 +39,12 @@ export class WebhookService {
     await this.webhookRepo.save(evento);
 
     if (firmaValida) {
-      // Actualizar transacción
-      const transaccion = await this.transaccionRepo.findOne({ where: { id_wompi: payload.data.transaction.id } });
+      const transaccion = await this.transaccionRepo.findOne({
+        where: { id_wompi: payload.data.transaction.reference },
+      });
       if (transaccion) {
-        transaccion.estado = payload.data.transaction.status === 'APPROVED' ? 'aprobado' : 'rechazado';
+        transaccion.estado =
+          payload.data.transaction.status === 'APPROVED' ? 'aprobado' : 'rechazado';
         transaccion.id_evento_webhook = idEvento;
         await this.transaccionRepo.save(transaccion);
       }
