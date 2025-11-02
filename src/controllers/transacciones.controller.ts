@@ -6,6 +6,12 @@ import { CrearTransaccionDto } from '../dto/crear-transaccion.dto';
 export class TransaccionesController {
   constructor(private service: TransaccionesService) {}
 
+  @Get('public-key')
+  getPublicKey() {
+    console.log('Public Key:', process.env.WOMPI_PUBLIC_KEY);
+    return { publicKey: process.env.WOMPI_PUBLIC_KEY || 'NO_KEY_FOUND' };
+  }
+  
   @Post()
   async crear(@Body() dto: CrearTransaccionDto) {
     return this.service.crearTransaccion(dto);

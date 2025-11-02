@@ -5,6 +5,7 @@ import { Transaccion } from '../entities/transaccion.entity';
 import { CrearTransaccionDto } from '../dto/crear-transaccion.dto';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid'; // Para generar UUID
+import crypto from 'crypto';
 
 @Injectable()
 export class TransaccionesService {
@@ -15,32 +16,49 @@ export class TransaccionesService {
 
   async crearTransaccion(dto: CrearTransaccionDto): Promise<any> {
     const transaccionId = uuidv4();
-    try {
-      // Simulación local sin llamada real a Wompi
-      const wompiData = {
-        id: 'fake_wompi_id_' + transaccionId,
-        checkout_url: 'https://checkout-simulado.wompi.co',
-      };
+    const wompiPublicKey = process.env.WOMPI_PUBLIC_KEY;
+    const integrityKey = process.env.WOMPI_INTEGRITY_KEY;
 
-      const transaccion = this.transaccionRepo.create({
-        id_transaccion: transaccionId,
-        id_wompi: wompiData.id,
-        id_usuario: dto.id_usuario,
-        id_cliente: dto.id_cliente,
-        id_cita: dto.id_cita,
-        monto: dto.monto,
-        servicio: dto.servicio,
-        metodo_pago: dto.metodo_pago || 'Tarjeta',
-        prestador_servicio: dto.prestador_servicio || 'Simulado',
-        estado: 'pendiente',
-      });
-
-      await this.transaccionRepo.save(transaccion);
-      return { redirect_url: wompiData.checkout_url };
-    } catch (error) {
-      console.error(error);
-      throw new HttpException('Error al crear transacción', HttpStatus.INTERNAL_SERVER_ERROR);
+    if (!wompiPublicKey || !integrityKey) {
+      throw new HttpException('Faltan llaves de Wompi en .env', HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    // 🔹 1. Obtener acceptance_token desde Wompi
+    const merchantResponse = await axios.get('https://api-sandbox.wompi.co/v1/merchants/' + wompiPublicKey);
+    const acceptanceToken = merchantResponse.data.data.presigned_acceptance.acceptance_token;
+
+    // 🔹 2. Calcular firma
+    const amountInCents = dto.monto * 100;
+    const reference = `ref_${transaccionId}`;
+    const signatureString = `${reference}${amountInCents}COP${integrityKey}`;
+    const signature = crypto.createHash('sha256').update(signatureString).digest('hex');
+
+    // 🔹 3. Guardar la transacción pendiente
+    const transaccion = this.transaccionRepo.create({
+      id_transaccion: transaccionId,
+      id_wompi: reference,
+      id_usuario: dto.id_usuario,
+      id_cliente: dto.id_cliente,
+      id_cita: dto.id_cita,
+      monto: dto.monto,
+      servicio: dto.servicio,
+      metodo_pago: dto.metodo_pago || 'Tarjeta',
+      prestador_servicio: dto.prestador_servicio || 'Plataforma',
+      estado: 'pendiente',
+    });
+
+    await this.transaccionRepo.save(transaccion);
+
+    // 🔹 4. Devolver todo al frontend
+    return {
+      publicKey: wompiPublicKey,
+      acceptance_token: acceptanceToken,
+      amount_in_cents: amountInCents,
+      currency: 'COP',
+      reference,
+      signature,
+      redirect_url: 'https://transaction-redirect.wompi.co/check',
+    };
   }
 
   async obtenerTransaccion(id: string): Promise<Transaccion | null> {

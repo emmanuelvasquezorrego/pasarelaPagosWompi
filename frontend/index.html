@@ -1,59 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Pago con Wompi</title>
-</head>
-<body>
-  <h1>Formulario de Pago</h1>
-  <form id="pagoForm">
-    <input type="number" id="monto" placeholder="Monto" required>
-    <input type="text" id="servicio" placeholder="Servicio" required>
-    <input type="hidden" id="id_usuario" value="uuid-de-usuario"> <!-- Reemplaza con un UUID real -->
-    <input type="hidden" id="id_cliente" value="uuid-de-cliente">
-    <input type="hidden" id="id_cita" value="uuid-de-cita">
-    <button type="submit">Pagar con Wompi</button>
-  </form>
-  <div id="resultado"></div>
-  <script src="https://checkout.wompi.co/widget.js" defer></script>
-  <script>
-    document.getElementById('pagoForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const data = {
-        monto: document.getElementById('monto').value,
-        servicio: document.getElementById('servicio').value,
-        id_usuario: document.getElementById('id_usuario').value,
-        id_cliente: document.getElementById('id_cliente').value,
-        id_cita: document.getElementById('id_cita').value,
-      };
-      
-      const response = await fetch('/transacciones', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      
-      const result = await response.json();
-      if (result.redirect_url) {
-        WompiCheckout.open({
-          publicKey: 'WOMPI_PUBLIC_KEY', // Reemplaza con la clave pública
-          currency: 'COP',
-          amountInCents: data.monto * 100,
-          reference: 'referencia',
-          onSuccess: () => { document.getElementById('resultado').innerHTML = 'Pago aprobado'; },
-          onError: () => { document.getElementById('resultado').innerHTML = 'Pago rechazado'; },
-        });
-      }
-    });
+  <head>
+    <meta charset="UTF-8" />
+    <title>Pago con Wompi</title>
+  </head>
+  <body>
+    <h1>Pago con Wompi</h1>
+    <form id="pagoForm">
+      <input id="monto" placeholder="Monto" required />
+      <input id="servicio" placeholder="Servicio" required />
+      <input id="id_usuario" placeholder="Usuario" required />
+      <input id="id_cliente" placeholder="Cliente" required />
+      <input id="id_cita" placeholder="Cita" required />
+      <button type="submit">Pagar</button>
+    </form>
 
-    // Consultar historial
-    async function consultarHistorial() {
-      const idUsuario = document.getElementById('id_usuario').value;
-      const response = await fetch(`/transacciones/usuario/${idUsuario}`);
-      const historial = await response.json();
-      document.getElementById('resultado').innerHTML += JSON.stringify(historial);
-    }
-    setTimeout(consultarHistorial, 5000); // Ejemplo: consultar después de 5 segundos
-  </script>
-</body>
+    <div id="widgetContainer"></div>
+
+    <script>
+      document.getElementById('pagoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const data = {
+          monto: document.getElementById('monto').value,
+          servicio: document.getElementById('servicio').value,
+          id_usuario: document.getElementById('id_usuario').value,
+          id_cliente: document.getElementById('id_cliente').value,
+          id_cita: document.getElementById('id_cita').value,
+        };
+
+        try {
+          // 🔹 Crear transacción (el backend devolverá publicKey y acceptance_token)
+          const response = await fetch('http://localhost:3000/transacciones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+          const result = await response.json();
+
+          if (!result.publicKey || !result.acceptance_token) {
+            alert("Error: el backend no devolvió los datos necesarios");
+            return;
+          }
+
+          // 🔹 Limpiar contenedor antes de renderizar el widget
+          document.getElementById('widgetContainer').innerHTML = '';
+
+          // 🔹 Insertar el script del widget de Wompi
+          const script = document.createElement('script');
+          script.src = 'https://checkout.wompi.co/widget.js';
+          script.setAttribute('data-render', 'button');
+          script.setAttribute('data-public-key', result.publicKey);
+          script.setAttribute('data-currency', 'COP');
+          script.setAttribute('data-amount-in-cents', result.amount_in_cents);
+          script.setAttribute('data-reference', result.reference);
+          script.setAttribute('data-signature:integrity', result.signature);
+          script.setAttribute('data-redirect-url', result.redirect_url);
+          script.setAttribute('data-acceptance-token', result.acceptance_token);
+          document.getElementById('widgetContainer').appendChild(script);
+
+        } catch (err) {
+          console.error('Error al crear transacción:', err);
+        }
+      });
+    </script>
+  </body>
 </html>
