@@ -1,98 +1,120 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 💳 Microservicio Pasarela de Pagos con Wompi
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Proyecto backend desarrollado en `NestJS` para gestionar pagos mediante `Wompi (sandbox)`, incluyendo manejo de transacciones, sincronización de estado y recepción de eventos mediante `webhooks`.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## 🚀 Tecnologías utilizadas
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+- `NestJS` (Framework backend)
+- `TypeORM` (ORM para base de datos)
+- `MySQL` (Base de datos relacional)
+- `Docker Compose` (Contenedores de base de datos y adminer)
+- `Swagger (OpenAPI)` (Documentación y pruebas interactivas)
+- `Axios` (Peticiones HTTP a Wompi)
+- `Crypto` (Generación de firmas SHA256)
 
-## Project setup
+---
 
-```bash
-$ npm install
-```
+## ⚙️ Instalación local
 
-## Compile and run the project
+### Requisitos Previos
+
+Antes de ejecutar el proyecto debe de tener:
+
+ - Docker Desktop
+ - Un editor de código (recomendado: VS Code)
+
+### 1️⃣ Clonar y abrir el repositorio
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/emmanuelvasquezorrego/pasarelaPagosWompi.git
+cd pasarela-de-pagos-wompi
+code .
 ```
 
-## Run tests
+### 2️⃣ Configurar variables de entorno (.env)
+
+Cree un archivo llamado `.env` en la raíz del proyecto backend (por ejemplo, /api/.env) con las siguientes variables:
 
 ```bash
-# unit tests
-$ npm run test
+# Llaves de Wompi (Sandbox)
+WOMPI_PUBLIC_KEY=pub_test_XXXXXXXXXXXXXXXX
+WOMPI_PRIVATE_KEY=prv_test_XXXXXXXXXXXXXXXX
+WOMPI_INTEGRITY_KEY=prod_integrity_XXXXXXXXXXXXXXXX
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+# Variables de Base de Datos
+DB_HOST=db
+DB_USERN=root
+DB_PASS=1234
+DB_NAME=pasarela
 ```
 
-## Deployment
+En la llaves de Wompi deberá de agregar sus propias llaves.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### 3️⃣ Levantar los contenedores con Docker
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Asegurese de abrir Docker Desktop y en la raíz del proyecto abra la terminal y ejecute:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker compose up --build
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4️⃣ Servicios
 
-## Resources
+Para acceder a los diferentes servicios diríjase a:
 
-Check out a few resources that may come in handy when working with NestJS:
+- `API de NestJS`: http://localhost:3000
+- `Swagger` (documentación interactiva): http://localhost:3000/api/docs
+- `Base de datos MySQL con Adminer`: http://localhost:8090
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
 
-## Support
+### 5️⃣ Probar el Microservicio
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+El proyecto puede ser probado en:
 
-## Stay in touch
+#### 💻 **Frontend de Prueba (Más fácil de probar)**
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Diríjase al archivo index.html y ábralo con la extensión de Live Server. La URL debe de ser algo como:
 
-## License
+```bash
+http://127.0.0.1:5500/frontend/index.html
+```
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Despues de llenar los datos del formulario y dar click en pagar seleccione como método de pago `NEQUI`. Al seleccionar esta opción en el número de teléfono ingrese una de estas dos opciones:
+
+- `3991111111` Para una transacción aprobada
+- `3992222222` Para una transsación rechazada
+
+#### 📘 **Swagger**
+
+Si por el contrario elige este método diríjase a: http://localhost:3000/api/docs. Desde allí podrá ver los endpoints, probar las solicitudes directamente y ver ejemplos de respuestas.
+
+- En `GET /transacciones/public-key` obtendrá su llave pública de Wompi y no es necesario ingresar ningún dato.
+- En `POST /transacciones` podrá crear una transacción. Para poder probar este endpoint en el recuadro de tipo `json` ingrese algo parecido a esto:
+    ```bash
+    {
+
+    "monto": 20000,
+
+    "servicio": "Corte de Pelo",
+
+    "id_usuario": "John",
+
+    "id_cliente": "Doe",
+
+    "id_cita": "05"
+
+    }
+    ```
+- En `GET /transacciones/usuario/{id_usuario}` podrá traer todas las transacciones asociadas a un usuario. Solo deberá de ingresar el nombre de uno existente (un usuario que tenga registros dentro de la base de datos para poder ver sus transacciones).
+- En `GET /transacciones/{id}` podrá ver la toda la información asociada a una transacción mediante su id. Este es el que aparece en la base de datos como: `id_transaccion`
+
+Cada que realiza una transacción mediante el frontend de prueba o swagger esta se verá reflejada en la base de datos.
+
+### 👤 Integrantes
+
+- Luis Miguel Martínez
+- Manuel Augusto Morales
+- Emmanuel Vásquez
+- Santiago Velásquez

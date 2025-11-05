@@ -1,5 +1,6 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn } from 'typeorm';
 
+// Entidad que representa un evento de webhook recibido de Wompi
 @Entity('webhook_eventos')
 export class WebhookEvento {
   @PrimaryColumn('uuid')

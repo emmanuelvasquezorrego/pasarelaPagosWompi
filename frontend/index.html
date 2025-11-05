@@ -301,10 +301,11 @@
         </div>
     </div>
 
-    <!-- Script de Wompi cargado en modo embedded -->
+    <!-- Script de wompi cargado en modo embebido -->
     <script src="https://checkout.wompi.co/widget.js"></script>
     
     <script>
+        // Manejar el envío del formulario
         document.getElementById('pagoForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -312,6 +313,7 @@
             document.getElementById('loadingIndicator').style.display = 'block';
             document.getElementById('wompiButton').disabled = true;
             
+            // Recopilar datos del formulario
             const data = {
                 monto: document.getElementById('monto').value,
                 servicio: document.getElementById('servicio').value,
@@ -327,8 +329,10 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data),
                 });
+                // Obtener respuesta del backend
                 const result = await response.json();
 
+                // Verificar que se recibieron los datos necesarios
                 if (!result.publicKey || !result.acceptance_token) {
                     alert("Error: el backend no devolvió los datos necesarios");
                     resetForm();
@@ -339,20 +343,21 @@
                 document.getElementById('loadingIndicator').style.display = 'none';
                 
                 // Abrir el checkout directamente usando la API de Wompi
+                // Crear instancia del widget de checkout
                 const checkout = new WidgetCheckout({
-                    currency: 'COP',
-                    amountInCents: result.amount_in_cents,
-                    reference: result.reference,
-                    publicKey: result.publicKey,
-                    signature: {
-                        integrity: result.signature
+                    currency: 'COP', // Moneda en COP
+                    amountInCents: result.amount_in_cents, // Monto en centavos
+                    reference: result.reference, // Referencia única de la transacción
+                    publicKey: result.publicKey, // Llave pública de Wompi
+                    signature: { // Firma para seguridad adicional
+                        integrity: result.signature 
                     },
-                    redirectUrl: result.redirect_url,
-                    taxInCents: {
+                    redirectUrl: result.redirect_url, // URL de redirección después del pago
+                    taxInCents: { // Impuestos (si aplica)
                         vat: 0,
                         consumption: 0
                     },
-                    customerData: {
+                    customerData: { // Datos del cliente (estáticos)
                         email: 'cliente@example.com',
                         fullName: 'Cliente', 
                     }
@@ -367,6 +372,7 @@
                     // Mostrar modal con resultado
                     showResultModal(transaction, data);
                     
+                    // Resetear formulario
                     resetForm();
                 });
 
@@ -377,6 +383,7 @@
             }
         });
 
+        // Mostrar modal de resultado
         function showResultModal(transaction, paymentData) {
             const modal = document.getElementById('resultModal');
             const icon = document.getElementById('resultIcon');
@@ -385,12 +392,14 @@
             const message = document.getElementById('resultMessage');
             const details = document.getElementById('resultDetails');
 
-            if (transaction.status === 'APPROVED') {
+            // Configurar contenido según el estado de la transacción
+            if (transaction.status === 'APPROVED') { // Pago aprobado
                 icon.className = 'result-icon success';
                 iconSymbol.textContent = '✓';
                 title.textContent = '¡Pago Exitoso!';
                 message.textContent = 'Tu transacción ha sido procesada correctamente.';
                 
+                // Detalles de la transacción
                 details.innerHTML = `
                     <div class="result-detail-item">
                         <span class="result-detail-label">ID de Transacción:</span>
@@ -409,7 +418,7 @@
                         <span class="result-detail-value">Aprobado</span>
                     </div>
                 `;
-            } else if (transaction.status === 'DECLINED') {
+            } else if (transaction.status === 'DECLINED') { // Pago rechazado
                 icon.className = 'result-icon error';
                 iconSymbol.textContent = '✕';
                 title.textContent = 'Pago Rechazado';
@@ -425,7 +434,7 @@
                         <span class="result-detail-value">Rechazado</span>
                     </div>
                 `;
-            } else {
+            } else { // Otros estados
                 icon.className = 'result-icon error';
                 iconSymbol.textContent = '!';
                 title.textContent = 'Estado del Pago';
@@ -443,9 +452,11 @@
                 `;
             }
 
+            // Mostrar el modal
             modal.classList.add('show');
         }
 
+        // Mostrar modal de error / Error antes del checkout con wompi (errores de validación, autenticación, etc)
         function showErrorModal(errorMessage) {
             const modal = document.getElementById('resultModal');
             const icon = document.getElementById('resultIcon');
@@ -470,17 +481,21 @@
             validateForm();
         });
 
+        // Resetear formulario
         function resetForm() {
             document.getElementById('loadingIndicator').style.display = 'none';
             document.getElementById('wompiButton').disabled = false;
         }
 
         // Validación en tiempo real
+        // Seleccionar todos los campos requeridos
         const inputs = document.querySelectorAll('input[required]');
+        // Agregar event listeners para validar en cada cambio
         inputs.forEach(input => {
             input.addEventListener('input', validateForm);
         });
 
+        // Función para validar el formulario
         function validateForm() {
             const allFilled = Array.from(inputs).every(input => input.value.trim() !== '');
             document.getElementById('wompiButton').disabled = !allFilled;
