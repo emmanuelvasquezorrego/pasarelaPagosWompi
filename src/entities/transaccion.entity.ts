@@ -1,5 +1,6 @@
 import { Entity, PrimaryColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm';
 
+// Entidad que representa una transacción en la base de datos
 @Entity('transacciones')
 export class Transaccion {
   @PrimaryColumn('uuid')

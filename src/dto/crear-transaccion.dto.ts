@@ -1,5 +1,6 @@
 import { IsString, IsUUID, IsNumber, IsOptional } from 'class-validator';
 
+// DTO para crear una nueva transacción
 export class CrearTransaccionDto {
   @IsNumber()
   monto: number;

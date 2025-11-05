@@ -8,16 +8,16 @@ import { WebhookEvento } from './entities/webhook-evento.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }), // <-- Recomendado
-    TypeOrmModule.forRoot({
-      type: 'mysql',
-      host: process.env.DB_HOST,
+    ConfigModule.forRoot({ isGlobal: true }), // Cargar variables de entorno globalmente
+    TypeOrmModule.forRoot({ // Configuración de TypeORM
+      type: 'mysql', // Tipo de base de datos
+      host: process.env.DB_HOST, // Host de la base de datos
       port: 3306,
-      username: process.env.DB_USER,
-      password: process.env.DB_PASS,
-      database: process.env.DB_NAME,
-      entities: [Transaccion, WebhookEvento],
-      synchronize: true,
+      username: process.env.DB_USER, // Usuario de la base de datos
+      password: process.env.DB_PASS, // Contraseña de la base de datos
+      database: process.env.DB_NAME, // Nombre de la base de datos
+      entities: [Transaccion, WebhookEvento], // Entidades a usar
+      synchronize: true, // Sincronizar la base de datos
     }),
     TransaccionesModule,
     WebhookModule,
